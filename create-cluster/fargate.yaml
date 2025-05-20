@@ -1,0 +1,62 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: sig-eks-cluster-fgonly
+  region: ap-northeast-2
+  version: "1.31"
+
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+        name: sig-eks-fg-sa
+        namespace: sig-eks-fg-ns
+      attachPolicyARNs:
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+    - metadata:
+        name: aws-load-balancer-controller
+        namespace: kube-system
+      wellKnownPolicies:
+        awsLoadBalancerController: true
+    - metadata:
+        name: cert-manager
+        namespace: cert-manager
+      wellKnownPolicies:
+        certManager: true
+
+
+vpc:
+  id: vpc-052909cfdcae36a68
+  subnets:
+    private:
+      ap-northeast-2a:
+        id: subnet-0ca9592b599a6534e
+      ap-northeast-2b:
+        id: subnet-07b7d82a20547638b
+  # clusterEndpoints:
+  #   privateAccess: true
+  #   publicAccess: true
+  # publicAccessCIDRs:
+  #   - 0.0.0.0/0
+
+fargateProfiles:
+  - name: kube-system
+    selectors:
+      - namespace: kube-system
+    tags:
+      profile-type: system
+
+  - name: app
+    selectors:
+      - namespace: app
+        labels:
+          run-on: fargate
+    tags:
+      profile-type: fargate
+
+cloudWatch:
+  clusterLogging:
+    enableTypes: ["*"]

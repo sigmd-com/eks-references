@@ -1,0 +1,98 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: sig-eks-cluster
+  region: ap-northeast-2
+  version: "1.31"
+
+vpc:
+  id: vpc-052909cfdcae36a68
+  subnets:
+    private:
+      ap-northeast-2a:
+        id: subnet-0ca9592b599a6534e
+      ap-northeast-2b:
+        id: subnet-07b7d82a20547638b
+  # clusterEndpoints:
+  #   privateAccess: true
+  #   publicAccess: true
+  # publicAccessCIDRs:
+  #   - 0.0.0.0/0
+
+managedNodeGroups:
+  - name: sig-eks-ng
+    # spot: true # 스팟 인스턴스 활성화 여부 (비활성화 권장)
+    instancePrefix: sig-eks-ec2
+    # instanceName: sig-eks-ec2 # 고정된 이름을 써야 할 경우 활성화하면 됨.
+    instanceType: t3.medium # m5.large 등 다른 인스턴스 shape을 사용해도 무관합니다.
+    privateNetworking: true
+    desiredCapacity: 2
+    minSize: 1
+    maxSize: 4
+    volumeSize: 20 # GB 단위이며, 최소 20GB 이상이어야 합니다.
+    ssh:
+      allow: true
+      enableSsm: true
+      sourceSecurityGroupIds:
+        - sg-06b9e1217ef97cfe7 # AWS Console에서 생성한 SG ID.
+      publicKeyName: sig-eks-key # AWS Console에서 생성한 KP 이름.
+      # publicKeyPath: /Users/sig-eks-key.pub
+    iam:
+      withAddonPolicies:
+        autoScaler: true
+        externalDNS: true
+        certManager: true
+        imageBuilder: true
+        awsLoadBalancerController: true
+        ebs: true
+        fsx: true
+        xRay: true
+        cloudWatch: true
+
+    labels:
+      role: worker
+      node-type: general
+    taints: []
+    tags:
+      nodegroup-role: worker
+    amiFamily: AmazonLinux2 # AMI 패밀리 리스트는 본 링크에서 확인하시기 바랍니다. https://eksctl.io/usage/custom-ami-support/
+
+fargateProfiles:
+  - name: sig-eks-fargate-profile
+    selectors:
+      - namespace: app
+        labels:
+          run-on: fargate
+    tags:
+      profile-type: fargate
+
+addons:
+  - name: vpc-cni
+    version: latest
+    configurationValues: |-
+      {
+        "env": {
+          "ENABLE_PREFIX_DELEGATION": "true",
+          "WARM_PREFIX_TARGET": "1"
+        }
+      }
+
+  - name: coredns
+    version: latest
+
+  - name: kube-proxy
+    version: latest
+
+  - name: aws-ebs-csi-driver
+    version: latest
+
+  - name: eks-pod-identity-agent
+    version: latest
+
+  - name: amazon-cloudwatch-observability
+    version: latest
+
+cloudWatch:
+  clusterLogging:
+    enableTypes: ["*"]
