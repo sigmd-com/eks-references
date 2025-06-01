@@ -7,13 +7,13 @@ metadata:
   version: "1.31"
 
 vpc:
-  id: vpc-052909cfdcae36a68
+  id: vpc-0514c6b40b3602d40
   subnets:
     private:
       ap-northeast-2a:
-        id: subnet-0ca9592b599a6534e
+        id: subnet-09045226938475040
       ap-northeast-2b:
-        id: subnet-07b7d82a20547638b
+        id: subnet-0e43b5bc73ece23db
   # clusterEndpoints:
   #   privateAccess: true
   #   publicAccess: true
@@ -35,7 +35,7 @@ managedNodeGroups:
       allow: true
       enableSsm: true
       sourceSecurityGroupIds:
-        - sg-06b9e1217ef97cfe7 # AWS Console에서 생성한 SG ID.
+        - sg-0e1466e3a8fa6c350 # AWS Console에서 생성한 SG ID.
       publicKeyName: sig-eks-key # AWS Console에서 생성한 KP 이름.
       # publicKeyPath: /Users/sig-eks-key.pub
     iam:
