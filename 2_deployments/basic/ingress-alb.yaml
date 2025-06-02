@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: basic-app-alb
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/subnets: <your-subnet-1>,<your-subnet-2>
+    alb.ingress.kubernetes.io/group.name: basic-ingress-group
+    alb.ingress.kubernetes.io/security-groups: <your-security-group-id>
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:<your-region>:<your-account-id>:certificate/<your-certificate-id>
+    alb.ingress.kubernetes.io/tags: Name=k8s-alb
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: basic-app-svc
+                port:
+                  number: 80
+    # AWS ALB DNS가 아닌 개인 dns를 쓰고 싶다면 아래 활성화.
+    # - host: <your-domain/example def.sigmd.com>
+    #   http:
+    #     paths:
+    #       - path: /
+    #         pathType: Prefix
+    #         backend:
+    #           service:
+    #             name: basic-app-svc
+    #             port:
+    #               number: 80
