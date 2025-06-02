@@ -3,16 +3,22 @@ kind: Ingress
 metadata:
   name: basic-app-alb
   annotations:
+  # Default Settings
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/subnets: <your-subnet-1>,<your-subnet-2>
     alb.ingress.kubernetes.io/group.name: basic-ingress-group
+  # SG 및 ALB 보안 세팅
     alb.ingress.kubernetes.io/security-groups: <your-security-group-id>
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:<your-region>:<your-account-id>:certificate/<your-certificate-id>
+  # ALB 부가 설정
     alb.ingress.kubernetes.io/tags: Name=k8s-alb
+    alb.ingress.kubernetes.io/healthcheck-path: /healthz
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '30'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
 spec:
   ingressClassName: alb
   rules:
