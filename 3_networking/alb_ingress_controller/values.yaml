@@ -1,0 +1,43 @@
+### README ###
+### 이 파일은 예제 파일입니다. 반드시 본인의 환경에 맞게 수정하여 사용하세요! ###
+clusterName: <your-cluster-name>
+region: <your-region>
+vpcId: <your-vpc-id>
+
+replicaCount: 2
+
+image:
+  repository: amazon/aws-load-balancer-controller
+  tag: v2.7.1
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: false
+  name: aws-load-balancer-controller
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations:
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+
+logLevel: 2
+
+enableShield: false
+enableWaf: false
+enableWafv2: false
+enableIngressClassName: true

@@ -1,0 +1,21 @@
+domainFilters:
+  - example.com
+
+policy: upsert-only
+registry: txt
+txtOwnerId: external-dns
+
+sources:
+  - service
+  - ingress
+
+serviceAccount:
+  create: false
+  name: external-dns
+
+aws:
+  region: ap-northeast-2
+  zoneType: public # or private; 이 부분은 Route53 hostedzone 유형에 따라 선택해주세요.
+  evaluateTargetHealth: true
+
+logLevel: info

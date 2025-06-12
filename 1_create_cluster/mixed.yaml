@@ -4,7 +4,27 @@ kind: ClusterConfig
 metadata:
   name: sig-eks-cluster
   region: ap-northeast-2
-  version: "1.31"
+  version: "1.32"
+
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+        name: aws-load-balancer-controller
+        namespace: kube-system
+      wellKnownPolicies:
+        awsLoadBalancerController: true
+    - metadata:
+        name: cert-manager
+        namespace: cert-manager
+      wellKnownPolicies:
+        certManager: true
+    - metadata:
+        name: external-dns
+        namespace: kube-system
+      attachPolicyARNs:
+        - arn:aws:iam::aws:policy/AmazonRoute53FullAccess
+        - arn:aws:iam::aws:policy/AmazonRoute53DomainsFullAccess
 
 vpc:
   id: vpc-0514c6b40b3602d40
@@ -70,6 +90,11 @@ fargateProfiles:
 addons:
   - name: vpc-cni
     version: latest
+    podIdentityAssociations:
+      - namespace: kube-system
+        serviceAccountName: aws-node
+        permissionPolicyARNs:
+          - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
     configurationValues: |-
       {
         "env": {
@@ -86,12 +111,22 @@ addons:
 
   - name: aws-ebs-csi-driver
     version: latest
+    podIdentityAssociations:
+      - namespace: kube-system
+        serviceAccountName: ebs-csi-controller-sa
+        permissionPolicyARNs:
+          - arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy
 
   - name: eks-pod-identity-agent
     version: latest
 
   - name: amazon-cloudwatch-observability
     version: latest
+    podIdentityAssociations:
+      - namespace: amazon-cloudwatch
+        serviceAccountName: cloudwatch-agent
+        permissionPolicyARNs:
+          - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
 
 cloudWatch:
   clusterLogging:
